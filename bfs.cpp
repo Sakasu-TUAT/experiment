@@ -18,6 +18,10 @@
 #include <unordered_set>
 #include <algorithm>
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 using namespace std;
 using ll = long long;
 #define rep(i, a, b) for (int i = a; i < b; i++)
@@ -29,7 +33,8 @@ using namespace std;
 constexpr int dx[4] = {-1, 1, 0, 0};
 constexpr int dy[4] = {0, 0, -1, 1};
 
-std::ifstream ifs("./6002/map0");
+string fileName = "";
+std::ifstream ifs;
 vector<pair<int,int>> visited;
 pair<int, int> goal = {99, 99};
 
@@ -87,9 +92,12 @@ void resultVisualizer(){
     }
 }
 
-int main (){
+int main (int argc, char* argv[]){
     string str;
     vector<string> map;
+    string fileNum;
+    fileName = "./6002/map" + string(argv[1]);
+    ifs = std::ifstream(fileName);
 
     while (getline(ifs, str)) {  
         map.emplace_back(str);  
@@ -117,8 +125,7 @@ int main (){
     // resultVisualizer();
     cout << "memory: " << memory << "\t" << 
             "timeComplexity: " << timeComplexity << endl; 
-
-  
+            
     cout << "ans : " << dist[9][9] << endl;
 }
 

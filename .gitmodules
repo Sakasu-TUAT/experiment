@@ -1,0 +1,3 @@
+[submodule "cmd-automator"]
+	path = cmd-automator
+	url = git@github.com:Sakasu-TUAT/cmd-automator.git
