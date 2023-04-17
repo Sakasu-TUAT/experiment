@@ -11,7 +11,7 @@ def main():
         writer.writeheader() #ヘッダー書き込み
 
         #ファイル番号
-        for i in range (0, 2):
+        for i in range (0, 100):
             cmd = ["./a.out", str(i)]
             output = subprocess.check_output(cmd)
             print(output.decode())

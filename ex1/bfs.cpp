@@ -1,26 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <map>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include <iomanip>
-#include <limits>
-#include <deque>
-#include <cmath>
-#include <iomanip>
-#include <limits>
-#include <deque>
-#include <set>
-#include <queue>
-#include <unordered_map>
-#include <unordered_set>
-#include <algorithm>
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include <bits/stdc++.h>
 
 using namespace std;
 using ll = long long;
@@ -36,15 +14,16 @@ constexpr int dy[4] = {0, 0, -1, 1};
 string fileName = "";
 std::ifstream ifs;
 vector<pair<int,int>> visited;
-pair<int, int> goal = {99, 99};
+pair<int, int> goal = {9, 9};
 
 int h, w;
+vector<string> maze;
 vector<vector<int>> dist(h, vector<int>(w));
 
 int timeComplexity = 0;
 int memory = 0;
 
-void next (queue<pair<int, int>> &q, const vector<string> &map){
+void next (queue<pair<int, int>> &q){
     //時間計算量を記録
     timeComplexity++;
 
@@ -53,8 +32,8 @@ void next (queue<pair<int, int>> &q, const vector<string> &map){
     for(int i=0; i<4; i++){
         int nextY = pos.first+dy[i], nextX = pos.second+dx[i];
         if((1 <= nextX and nextX <= w-2 and 1 <= nextY and nextY <= h-2)){
-            if(dist[nextY][nextX]==-1 and map[nextY][nextX] == '0'){
-                // cerr << "x,y = (" << nextX << "," << nextY << ") -> "<<map[nextX][nextY] << endl;
+            if(dist[nextY][nextX]==-1 and maze[nextY][nextX] == '0'){
+                // cerr << "x,y = (" << nextX << "," << nextY << ") -> "<<maze[nextX][nextY] << endl;
                 dist[nextY][nextX] = dist[pos.first][pos.second] + 1; //距離の更新
                 if(pair<int, int>(nextX, nextY)== goal){
                     cerr << "GOAL" << endl;
@@ -92,23 +71,33 @@ void resultVisualizer(){
     }
 }
 
-int main (int argc, char* argv[]){
+
+//迷路ファイルの読み込みと表示
+void mazeIO(){
     string str;
-    vector<string> map;
     string fileNum;
-    fileName = "./6002/map" + string(argv[1]);
+
+    fileName = "./map1010";
+    // fileName = "./6002/map" + string(argv[1]);
     ifs = std::ifstream(fileName);
 
     while (getline(ifs, str)) {  
-        map.emplace_back(str);  
-        w = str.length();  
+        maze.emplace_back(str);  
     }
-    //正しくmapが取得できたかを表示
-    for(auto v : map){
-        // cerr << v << endl;
+    w = str.length();  
+    //正しくmazeが取得できたかを表示
+    for(auto v : maze){
+        cerr << v << endl;
         h++;
     }
     cerr << "h, w =  " << h << ", " << w << endl;
+}
+
+int main (int argc, char* argv[]){
+
+    //迷路ファイルの読み込みと表示
+    mazeIO();
+
     dist.resize(h, vector<int>(w));
     for(int i = 0; i < h; i++){
         for(int j = 0; j < w; j++){
@@ -119,10 +108,11 @@ int main (int argc, char* argv[]){
     q.push({1,1});
     dist[1][1] = 0;
     while(!q.empty()){
-        next(q, map);
+        next(q);
     }
 
-    // resultVisualizer();
+    resultVisualizer();
+    
     cout << "memory: " << memory << "\t" << 
             "timeComplexity: " << timeComplexity << endl; 
             
