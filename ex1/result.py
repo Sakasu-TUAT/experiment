@@ -5,7 +5,7 @@ import csv
 def main():
     # CSVに結果を出力
     with open('output.csv', mode='w') as csv_file: #上書き
-        #表のヘッダー名　#この辺は自由に変えて
+        #表のヘッダー名
         fieldnames = ['memory', 'timeComplexity', 'dist'] 
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader() #ヘッダー書き込み
@@ -13,6 +13,7 @@ def main():
         #ファイル番号
         for i in range (0, 100):
             cmd = ["./a.out", str(i)]
+            # ./a.out id の結果を取得
             output = subprocess.check_output(cmd)
             print(output.decode())
             memory = int(output.split()[1])
@@ -20,7 +21,6 @@ def main():
             dist = int(output.split()[-1])
 
             #表のヘッダー名と合わせること
-            #出力したいデータは自由に変えて
             writer.writerow({'memory': memory, 'timeComplexity': time_complexity, 'dist': dist})
 
 
