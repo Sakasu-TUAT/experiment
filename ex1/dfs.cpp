@@ -1,39 +1,56 @@
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <map>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include <iomanip>
-#include <limits>
-#include <deque>
-#include <cmath>
-#include <iomanip>
-#include <limits>
-#include <deque>
-#include <set>
-#include <queue>
-#include <unordered_map>
-#include <unordered_set>
-#include <algorithm>
+#include <bits/stdc++.h>
 
 using namespace std;
 using ll = long long;
 #define rep(i, a, b) for (int i = a; i < b; i++)
 
+
+
+using namespace std;
+
 constexpr int dx[4] = {-1, 1, 0, 0};
 constexpr int dy[4] = {0, 0, -1, 1};
 
-std::ifstream ifs("./6002/map0");
+string fileName = "";
+std::ifstream ifs;
+vector<pair<int,int>> visited;
+pair<int, int> goal = {99, 99};
 
 int h, w;
+vector<string> maze;
 vector<vector<int>> dist(h, vector<int>(w));
-vector<vector<bool>> visited;  // 既に通った場所なのかを記録しておく配列
 
 int timeComplexity = 0;
 int memory = 0;
 
+void next (stack<pair<int, int>> &s){
+    //時間計算量を記録
+    timeComplexity++;
+
+    auto pos = s.top();
+    s.pop();
+    for(int i=0; i<4; i++){
+        int nextY = pos.first+dy[i], nextX = pos.second+dx[i];
+        if((1 <= nextX and nextX <= w-2 and 1 <= nextY and nextY <= h-2)){
+            if(dist[nextY][nextX]==-1 and maze[nextY][nextX] == '0'){
+                // cerr << "x,y = (" << nextX << "," << nextY << ") -> "<<maze[nextX][nextY] << endl;
+                dist[nextY][nextX] = dist[pos.first][pos.second] + 1; //距離の更新
+                if(pair<int, int>(nextX, nextY)== goal){
+                    cerr << "GOAL" << endl;
+                    while(!s.empty()){
+                        s.pop();
+                    }
+                    return;
+                }  
+                pair<int, int> nv = {nextY, nextX};
+                s.push(nv);
+                //メモリの取得
+                int size = s.size();
+                memory = max(memory, size);
+            }
+        }
+    }
+}
 
 void resultVisualizer(){
   for(int i = 0; i < h; i++){
@@ -54,62 +71,51 @@ void resultVisualizer(){
     }
 }
 
-void dfs(std::pair<int,int> pos, const vector<string> &map) {
-    timeComplexity++;
+string fileNum;
 
-    visited[pos.first][pos.second] = true;
-
-    for (int i = 0; i < 4; i++) {
-        int nextY = pos.first  + dy[i];    
-        int nextX = pos.second + dx[i];    
-        if (nextY <= 0 || h-1 <= nextY || nextX <= 0 || w-1 <= nextX) continue; // 迷路の外に出るならスルー
-        if (map[nextY][nextX] == '1') {
-            continue;       // 障害物があればスルー
-        }
-        if (visited[nextY][nextX]) {
-            continue;             //探索済みならスルー
-        }
-        // cerr << "x,y = (" << nextX << "," << nextY << ") -> "<<map[nextX][nextY] << endl; 
-        dist[nextY][nextX] = dist[pos.first][pos.second] + 1;
-        memory = max(memory, dist[nextY][nextX]);
-
-        
-        dfs(pair<int, int>({nextY, nextX}), map);
-    }
-
-    return ;
-}
-
-int main () {
+//迷路ファイルの読み込みと表示
+void mazeIO(){
     string str;
-    vector<string> map;
+    ifs = std::ifstream(fileName);
+
     while (getline(ifs, str)) {  
-        map.emplace_back(str);  
+        maze.emplace_back(str);  
         w = str.length();  
     }
-    //正しくmapが取得できたかを表示
-    for(auto v : map){
+    //正しくmazeが取得できたかを表示
+    for(auto v : maze){
         // cerr << v << endl;
         h++;
     }
     cerr << "h, w =  " << h << ", " << w << endl;
+}
+
+int main (int argc, char* argv[]){
+
+
+    fileName = "./6002/map" + string(argv[1]);
+
+    //迷路ファイルの読み込みと表示
+    mazeIO();
+
     dist.resize(h, vector<int>(w));
-    visited.assign(h, vector<bool>(w, false));
     for(int i = 0; i < h; i++){
         for(int j = 0; j < w; j++){
             dist[i][j] = -1;
         }
     }
-    pair<int, int> start = {1,1};
+    stack<pair<int, int>> s;
+    s.push({1,1});
     dist[1][1] = 0;
-    dfs(start, map);
+    while(!s.empty()){
+        next(s);
+    }
 
     // resultVisualizer();
-
+    
     cout << "memory: " << memory << "\t" << 
-        "timeComplexity: " << timeComplexity << endl; 
-
-    cout << "ans : " << dist[9][9] << endl;
+            "timeComplexity: " << timeComplexity << 
+            "\tdist : " << dist[99][99] << endl;
 }
 
 

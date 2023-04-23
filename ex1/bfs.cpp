@@ -14,7 +14,7 @@ constexpr int dy[4] = {0, 0, -1, 1};
 string fileName = "";
 std::ifstream ifs;
 vector<pair<int,int>> visited;
-pair<int, int> goal = {9, 9};
+pair<int, int> goal = {99, 99};
 
 int h, w;
 vector<string> maze;
@@ -72,19 +72,17 @@ void resultVisualizer(){
 }
 
 
+string fileNum;
 //迷路ファイルの読み込みと表示
 void mazeIO(){
     string str;
-    string fileNum;
 
-    fileName = "./map1010";
-    // fileName = "./6002/map" + string(argv[1]);
     ifs = std::ifstream(fileName);
 
     while (getline(ifs, str)) {  
-        maze.emplace_back(str);  
+        maze.emplace_back(str); 
+        w = str.length();  
     }
-    w = str.length();  
     //正しくmazeが取得できたかを表示
     for(auto v : maze){
         cerr << v << endl;
@@ -94,7 +92,7 @@ void mazeIO(){
 }
 
 int main (int argc, char* argv[]){
-
+    fileName = "./6002/map" + string(argv[1]);
     //迷路ファイルの読み込みと表示
     mazeIO();
 
@@ -111,12 +109,11 @@ int main (int argc, char* argv[]){
         next(q);
     }
 
-    resultVisualizer();
+    // resultVisualizer();
     
     cout << "memory: " << memory << "\t" << 
-            "timeComplexity: " << timeComplexity << endl; 
-            
-    cout << "ans : " << dist[9][9] << endl;
+            "timeComplexity: " << timeComplexity <<"\t" << 
+            "ans : " << dist[99][99] << endl;
 }
 
 

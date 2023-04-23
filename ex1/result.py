@@ -4,7 +4,7 @@ import csv
 
 def main():
     # CSVに結果を出力
-    with open('output.csv', mode='w') as csv_file: #上書き
+    with open('output.csv', mode='w', newline='') as csv_file: #上書き
         #表のヘッダー名
         fieldnames = ['memory', 'timeComplexity', 'dist'] 
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -21,7 +21,7 @@ def main():
             dist = int(output.split()[-1])
 
             #表のヘッダー名と合わせること
-            writer.writerow({'memory': memory, 'timeComplexity': time_complexity, 'dist': dist})
+            csv_file.write(f"{memory},{time_complexity},{dist}\n")
 
 
 

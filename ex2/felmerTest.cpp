@@ -52,7 +52,9 @@ int main(){
     int p = 76;
     bool isPrime = true;
 
-    for(int p = 2; p < 500; p++){
+    // for(int p = 2; p < 500; p++){
+
+        p = 561;
         int cnt = 0;
         for(int i=0; i<s; i++){
             int a = random(1, p-1); //乱数生成
@@ -65,6 +67,6 @@ int main(){
         cout << cnt << endl;
         cout << "Probability that p is a prime number: " << (double(cnt)/double(s))*100 << "%" << endl;
         ofs << p << ", " << (double(cnt)/double(s))*100 << endl;
-    }
+    // }
     
 }
