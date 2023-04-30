@@ -16,7 +16,10 @@ int calcEuclid(int a, int b){
 }
 
 int main(){
-    int a = 12, b = 8;
-    cout << calcEuclid(a, b) << endl;
+
+    vector<pair<int, int>> test = {{12, 8}, {5,4}, {50, 5}, {41, 29}};
+    for(const auto [a, b] : test){
+        cout << "gcd(" << a << ", " << b << ") = " << calcEuclid(a, b) << endl;
+    }
     
 }

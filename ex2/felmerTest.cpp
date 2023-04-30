@@ -51,10 +51,14 @@ int main(){
     int s = 1e4;
     int p = 76;
     bool isPrime = true;
+    vector<int> carmichaelNumbers = {
+    561, 1105, 1729, 2465, 2821, 6601, 8911,
+    // 7, 13, 21, 51, 23, 57
+}; 
 
+    for(const auto v : carmichaelNumbers){
     // for(int p = 2; p < 500; p++){
-
-        p = 561;
+        p = v;
         int cnt = 0;
         for(int i=0; i<s; i++){
             int a = random(1, p-1); //乱数生成
@@ -64,9 +68,9 @@ int main(){
                 cnt++;
             } 
         }
-        cout << cnt << endl;
-        cout << "Probability that p is a prime number: " << (double(cnt)/double(s))*100 << "%" << endl;
+        // cout << cnt << endl;
+        cout << "Probability that "<< p << " is a prime number: " << (double(cnt)/double(s))*100 << "%" << endl;
         ofs << p << ", " << (double(cnt)/double(s))*100 << endl;
-    // }
+    }
     
 }

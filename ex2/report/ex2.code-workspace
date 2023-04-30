@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"map": "cpp",
+			"iomanip": "cpp",
+			"ostream": "cpp"
+		}
+	}
+}

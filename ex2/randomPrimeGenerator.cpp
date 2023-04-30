@@ -102,15 +102,10 @@ int generatePrime(int n, int k) {
 
 int main(){
 
-    vector<int> carmichaelNumbers = {
-        561, 1105, 1729, 2465, 2821, 6601, 8911,
-        // 7, 13, 21, 51, 23, 57
-    }; 
-
     int n=16;
     int s=1e2;
     for(int i=2; i<=n; i++){
-      cout << generatePrime(i, s) << endl;
+      cout << generatePrime(i, s) << "\tis Prime Number" << endl;
     }
 
 

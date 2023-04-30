@@ -9,7 +9,7 @@ using ll = long long;
 using namespace std;
 
 
-
+//拡張ユークリッド関数
 int calcExtendedEuclid(int a, int b, int &x, int &y){  
     if(b==0){
         x = 1;
@@ -21,21 +21,34 @@ int calcExtendedEuclid(int a, int b, int &x, int &y){
     return d;
 }
 
+//aをmで割った正の余りを計算
 int mod (int a, int m){
     return (a%m + m) %m;
 }
 
+//逆元を計算
 int modinv(int a, int m){
     int x, y;
     calcExtendedEuclid(a, m, x, y);
+    cout << "(a, b, x, y) = ("
+    << a << ", " << m << ", " << x << ", " << y;
+    if(y==17) cout << ")\t" ;
+    else cout << ")\t\t" ;
+    cout << "Inverse modulo: ";
     return mod(x, m);
 }
 
 int main(){
-    int a = 5, b = 13;
-    int x, y;
+
     //5y=1(mod. 13) -> 5*8-13*3=1 
-    // -> 5x+13y=1を満たすyがmodにおける乗法の逆元(ここではy=8)
-    cout << modinv(a, b);
+    // -> 5y+13x=1を満たすyがmodにおける乗法の逆元(ここではy=8)
+    // int a = 5, b = 13;
+    // int x, y;
+
+    vector<pair<int, int>> test = {{12, 8}, {5,4}, {50, 5}, {41, 29}};
+    for(const auto [a, b] : test){
+        cout << modinv(a, b) << endl;
+    }
+ 
 
 }

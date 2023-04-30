@@ -44,11 +44,11 @@ long long int calcE(long long int p, long long int q){
 /*
  * 繰り返し自乗法を使った法nのべき乗計算（aのk乗をnで割った余りを求める）
  * 
- * unsigned long int a : 底
- * unsigned int k : 指数
- * unsigned int n : 法
+ * long long int a : 底
+ * long long int k : 指数
+ * long long int n : 法
 */
-unsigned int power(unsigned int a, unsigned int k, unsigned int n) {
+long long int power(long long int a, long long int k, long long int n) {
 
     a %= n;
 
@@ -60,7 +60,7 @@ unsigned int power(unsigned int a, unsigned int k, unsigned int n) {
     }
 
     int i;
-    unsigned int value = 1;
+    long long int value = 1;
     for(i = 0; i < k; i++) {
         value *= a;
         if(value >= n) {
@@ -89,11 +89,14 @@ void decryptor(int d, int n){
 
 
 int main(){
-    int p = 41, q = 13;
+    int p = 13, q = 7;
     int n = p*q;
     int e = calcE(p,q);
+
+    cout << "p: " << p << endl;
+    cout << "q: " << q << endl;
     cout << "N: " << n << endl;
-    cout << "E: " << e << endl;
+    cout << "e: " << e << endl;
 
     int d = modinv(e, (p-1)*(q-1));
     cout << "d: "<< d << endl;
@@ -105,10 +108,25 @@ int main(){
         cout << v;
     } cout << endl;
 
+    std::ofstream hirabun_file_1, hirabun_file_2;
+    std::string filename_1 = "hirabun_1.txt";
+    hirabun_file_1.open(filename_1, std::ios::out);
+
     cout << "hirabun:\t";
     for(const auto &v : hirabun){
         cout << v;
+        hirabun_file_1 << v;
     } cout << endl;
+
+    std::string filename_2 = "hirabun_2.txt";
+    hirabun_file_2.open(filename_2, std::ios::out);
+
+    for(int i=0; i<n; i++){
+        cout << i;
+        hirabun_file_2 << i;
+    } cout << endl;
+
+
 
 
     int original = 2;

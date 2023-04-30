@@ -90,7 +90,7 @@ void calcMillerRabin(){
         }
         // cout << notPrime << " + " << prime << " == " << s << endl;
 
-        cout << "Prime probability : "<< p <<" # " << (double(prime)/double(s))*100 << "%" << endl;
+        cout << "Probability that "<< p <<" is a prime number : " << (double(prime)/double(s))*100 << "%" << endl;
         ofs << p << ", " << (double(prime)/double(s))*100 << endl;
     }
 }
