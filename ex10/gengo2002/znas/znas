@@ -1,0 +1,689 @@
+#!/usr/bin/awk -f
+
+BEGIN {
+  g_lines = 0;
+  g_tmplines = 0;
+  g_locate = 0;
+  g_code_start = 0;  # 0x00000000
+  g_data_start = 1073741824;  # 0x40000000
+  g_nextline = ""
+
+  getnext();
+
+  read_head();
+
+  g_tmpout[g_tmplines++] = "e8 :_main";
+  g_locate += 5;
+  g_tmpout[g_tmplines++] = "-";
+  g_tmpout[g_tmplines++] = "f4";
+  g_locate += 1;
+  g_tmpout[g_tmplines++] = "-";
+
+  read_code();
+
+  #do {
+  #  print g_tmpout[g_tmplines--];
+  #} while (g_tmplines > -1);
+
+  #for (i in g_gvar_symtbl) {
+  #  printf("\"%s\" : %x\n", i, g_gvar_symtbl[i]);
+  #}
+
+  #for (i in g_label_symtbl) {
+  #  printf("\"%s\" : %x\n", i, g_label_symtbl[i]);
+  #}
+
+  out_fixup();
+}
+
+function read_head(  offset, var_name, size) {
+  offset = 0;
+
+  while (g_nextline !~ /^[ \t]*\.text[ \t]*$/) {
+    if (g_nextline ~ /^[ \t]*\.globl[ \t]+/) {
+      ;
+    } else if (g_nextline ~ /^[ \t]*\.lcomm[ \t]+/) {
+      # グローバル変数のシンボルテーブルへの登録
+      sub(/^[ \t]*\.lcomm[ \t]+/, "", g_nextline);  # 先頭の " .lcomm " をひっぺがす
+      match(g_nextline, /^[A-Za-z_][0-9A-Za-z_]*/);
+      var_name = substr(g_nextline, RSTART, RLENGTH);
+      if (var_name == "")
+        bout();
+      g_gvar_symtbl[var_name] = (g_data_start + offset);
+      sub(/^[A-Za-z_][0-9A-Za-z_]*[ \t]*,[ \t]*/, "", g_nextline);
+      match(g_nextline, /^[1-9][0-9]*/);
+      size = substr(g_nextline, RSTART, RLENGTH);
+      if (size == "")
+        bout();
+      size += 0;
+      offset += size;
+      sub(/^[1-9][0-9]*[ \t]*/, "", g_nextline);
+      if (g_nextline != "")
+        bout();
+    } else
+      bout();
+
+    getnext();
+  }
+}
+
+function read_code(  alignment, m, lb) {
+  while (g_nextline != 0) {
+    if (g_nextline ~ /^[ \t]*\.text[ \t]*$/) {
+      ;
+    } else if (g_nextline ~ /^[ \t]*\.align[ \t]+/) {
+      sub(/^[ \t]*\.align[ \t]+/, "", g_nextline);
+      match(g_nextline, /^[1-9][0-9]*/);
+      alignment = substr(g_nextline, RSTART, RLENGTH);
+      if (alignment == "")
+        bout();
+      alignment += 0;
+      if ((m = (g_locate % alignment)) > 0) {
+        do {
+          g_tmpout[g_tmplines++] = "90";
+          g_locate += 1;
+        } while (--m > 0);
+
+        g_tmpout[g_tmplines++] = "-";
+      }
+    } else if (g_nextline ~ /^[ \t]*\.type[ \t]+/) {
+      ;
+    } else if (g_nextline ~ /^[A-Za-z_][0-9A-Za-z_\.]*:/) {
+      # ラベルのシンボルテーブルへの登録
+      match(g_nextline, /^[A-Za-z_][0-9A-Za-z_\.]*/);
+      lb = substr(g_nextline, RSTART, RLENGTH);
+      if (lb == "")
+        bout();
+      g_label_symtbl[lb] = g_locate;
+      sub(/^[A-Za-z_][0-9A-Za-z_\.]*:[ \t]*/, "", g_nextline);
+      if (g_nextline != "") {
+        gentmp();
+      }
+    } else {
+      gentmp();
+    }
+
+    getnext();
+  }
+}
+
+function out_fixup(  next_locate, lines, l, ls, bytes, lbuf, i, name, ofs) {
+  # このフィックスアップの戦略は後ろに imm が存在する disp に pc 相対が
+  # あるとまずい。( x86 では問題は起きない )
+  next_locate = 0;
+  lines = 0;
+  lbuf = ""
+
+  while ((l = g_tmpout[lines++]) != "") {
+    if (l == "-") {
+      bytes = split(lbuf, ls, " ");
+      for (i = 1; i <= bytes; i++) {
+        next_locate++;
+
+        if (ls[i] ~ /^[0-9a-z][0-9a-z]$/)
+          printf("%s", ls[i]);
+        else if (ls[i] ~ /^[0-9a-z]$/)
+          printf("0%s", ls[i]);
+        else if (ls[i] ~ /^@[A-Za-z_][0-9A-Za-z_]*$/) {
+          next_locate += 3;
+          sub(/^@/, "", ls[i]);
+          match(ls[i], /^[A-Za-z_][0-9A-Za-z_]*$/);
+          name = substr(ls[i], RSTART, RLENGTH);
+          if (name == "")
+            bout("znas internal error (out_fixup())");
+          if (!(name in g_gvar_symtbl))
+            bout("znas cannot find global variable");
+          prout32(g_gvar_symtbl[name]);
+        } else if (ls[i] ~ /^![A-Za-z_][0-9A-Za-z_\.]*$/) {
+          sub(/^!/, "", ls[i]);
+          match(ls[i], /^[A-Za-z_][0-9A-Za-z_\.]*$/);
+          name = substr(ls[i], RSTART, RLENGTH);
+          if (name == "")
+            bout("znas internal error (out_fixup())");
+          if (!(name in g_label_symtbl))
+            bout("znas cannot find local label");
+          ofs = g_label_symtbl[name] - next_locate;
+          if ((ofs < -128) || (127 < ofs))
+            bout("znas find too far conditional jump");
+          prout8(ofs);
+        } else if (ls[i] ~ /^:[A-Za-z_][0-9A-Za-z_\.]*$/) {
+          next_locate += 3;
+          sub(/^:/, "", ls[i]);
+          match(ls[i], /^[A-Za-z_][0-9A-Za-z_\.]*$/);
+          name = substr(ls[i], RSTART, RLENGTH);
+          if (name == "")
+            bout("znas internal error (out_fixup())");
+          if (!(name in g_label_symtbl))
+            bout("znas cannot find label");
+          ofs = g_label_symtbl[name] - next_locate;
+          prout32(ofs);
+        } else
+          bout("znas internal error (out_fixup())");
+
+        if (i == bytes)
+          print "";
+        else
+          printf(" ");
+      }
+      lbuf = "";
+    } else {
+      lbuf = lbuf " " l;
+    }
+  }
+}
+
+function prout8(n,   tmp) {
+  tmp = "00" sprintf("%x", n);
+  printf("%s", substr(tmp, length(tmp) - 1));
+}
+
+function prout32(n,  tmp) {
+  tmp = "00000000" sprintf("%x", n);
+  printf("%s ", substr(tmp, length(tmp) - 1));
+  tmp = substr(tmp, 1, length(tmp) - 2);
+  printf("%s ", substr(tmp, length(tmp) - 1));
+  tmp = substr(tmp, 1, length(tmp) - 2);
+  printf("%s ", substr(tmp, length(tmp) - 1));
+  tmp = substr(tmp, 1, length(tmp) - 2);
+  printf("%s", substr(tmp, length(tmp) - 1));
+}
+
+function gentmp(  mnemonic) {
+  sub(/^[ \t]*/, "", g_nextline);
+  match(g_nextline, /^[a-z]+/);
+  mnemonic = substr(g_nextline, RSTART, RLENGTH);
+  sub(/^[a-z]+[ \t]*/, "", g_nextline);
+  # printf("\"%s\" : \"%s\"\n", mnemonic, g_nextline);
+  if (mnemonic == "")
+    bout();
+  else if ((mnemonic == "addl") || (mnemonic == "andl") \
+           || (mnemonic == "cmpl") || (mnemonic == "movl") \
+           || (mnemonic == "orl") || (mnemonic == "subl") \
+           || (mnemonic == "xorl"))
+    inst_bin(mnemonic);
+  else if (mnemonic == "call")
+    inst_call();
+  else if (mnemonic == "cltd")
+    inst_cltd();
+  else if ((mnemonic == "idivl") || (mnemonic == "imull"))
+    inst_divmul(mnemonic);
+  else if (mnemonic == "int")
+    inst_int();
+  else if (mnemonic == "jmp")
+    inst_jmp();
+  else if (mnemonic ~ /^j[a-z]+/)
+    inst_jcc(mnemonic);
+  else if (mnemonic == "leave")
+    inst_leave();
+  else if ((mnemonic == "negl") || (mnemonic == "notl"))
+    inst_unary(mnemonic);
+  else if (mnemonic == "popl")
+    inst_popl();
+  else if (mnemonic == "pushl")
+    inst_pushl();
+  else if (mnemonic == "ret")
+    inst_ret();
+  else if ((mnemonic == "sarl") || (mnemonic == "shll") || (mnemonic == "shrl"))
+    inst_shift(mnemonic);
+  else
+    bout();
+}
+
+function inst_call(  lb) {
+  match(g_nextline, /^[A-Za-z_][0-9A-Za-z_\.]*/);
+  lb = substr(g_nextline, RSTART, RLENGTH);
+  if (lb == "")
+    bout();
+  g_tmpout[g_tmplines++] = "e8 :" lb;
+  g_locate += 5;
+  sub(/^[A-Za-z_][0-9A-Za-z_\.]*[ \t]*$/, "", g_nextline);
+  if (g_nextline != "")
+    bout();
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_cltd() {
+  if (g_nextline != "")
+    bout();
+  g_tmpout[g_tmplines++] = "99";
+  g_locate += 1;
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_divmul(mnemonic,   eff) {
+  if (g_nextline !~ /^[^,]*,[ \t]*%eax[ \t]*$/)
+    bout();
+  g_tmpout[g_tmplines++] = "f7";
+  g_locate += 1;
+
+  match(g_nextline, /^[^ \t,]*/);
+  eff = substr(g_nextline, RSTART, RLENGTH);
+  if (eff == "")
+    bout();
+
+  if (mnemonic == "idivl")
+    gen_modrm2(7, eff);
+  else if (mnemonic == "imull")
+    gen_modrm2(5, eff);
+  else
+    bout();
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_int(  intnum) {
+  if (g_nextline !~ /^\$[1-9][0-9]*[ \t]*$/)
+    bout();
+  sub(/^\$/, "", g_nextline);
+  match(g_nextline, /^[1-9][0-9]*/);
+  intnum = substr(g_nextline, RSTART, RLENGTH);
+  if (intnum == "")
+    bout();
+  intnum += 0;
+  if ((intnum < 0) || (255 < intnum))
+    bout();
+  g_tmpout[g_tmplines++] = sprintf("cd %x", intnum);
+  g_locate += 2;
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_jmp() {
+  match(g_nextline, /^[A-Za-z_][0-9A-Za-z_\.]*/);
+  lb = substr(g_nextline, RSTART, RLENGTH);
+  if (lb == "")
+    bout();
+  g_tmpout[g_tmplines++] = "e9 :" lb;
+  g_locate += 5;
+  sub(/^[A-Za-z_][0-9A-Za-z_\.]*[ \t]*$/, "", g_nextline);
+  if (g_nextline != "")
+    bout();
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_jcc(mnemonic) {
+  match(g_nextline, /^[A-Za-z_][0-9A-Za-z_\.]*/);
+  lb = substr(g_nextline, RSTART, RLENGTH);
+  if (lb == "")
+    bout();
+
+  if ((mnemonic == "je") || (mnemonic == "jz"))
+    g_tmpout[g_tmplines++] = "0f 84 :" lb;
+  else if ((mnemonic == "jne") || (mnemonic == "jnz"))
+    g_tmpout[g_tmplines++] = "0f 85 :" lb;
+  else if ((mnemonic == "jl") || (mnemonic == "jnge"))
+    g_tmpout[g_tmplines++] = "0f 8c :" lb;
+  else if ((mnemonic == "jnl") || (mnemonic == "jge"))
+    g_tmpout[g_tmplines++] = "0f 8d :" lb;
+  else if ((mnemonic == "jle") || (mnemonic == "jng"))
+    g_tmpout[g_tmplines++] = "0f 8e :" lb;
+  else if ((mnemonic == "jnle") || (mnemonic == "jg"))
+    g_tmpout[g_tmplines++] = "0f 8f :" lb;
+  else
+    bout();
+
+  g_locate += 6;
+  sub(/^[A-Za-z_][0-9A-Za-z_\.]*[ \t]*$/, "", g_nextline);
+  if (g_nextline != "")
+    bout();
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_leave() {
+  if (g_nextline != "")
+    bout();
+  g_tmpout[g_tmplines++] = "c9";
+  g_locate += 1;
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_bin(mnemonic,   eff, imm, reg) {
+  if (g_nextline ~ /^\$(0|[1-9][0-9]*)/) {
+    # ソース側はイミディエイト
+    sub(/^\$/, "", g_nextline);
+    match(g_nextline, /^(0|[1-9][0-9]*)/);
+    imm = substr(g_nextline, RSTART, RLENGTH);
+    imm += 0;
+    sub(/^(0|[1-9][0-9]*)[ \t]*,[ \t]*/, "", g_nextline);
+
+    if (mnemonic == "movl")
+      g_tmpout[g_tmplines++] = "c7";
+    else if ((imm < -128) || (127 < imm))
+      g_tmpout[g_tmplines++] = "81";
+    else if ((-128 <= imm) && (imm <= 127))
+      g_tmpout[g_tmplines++] = "83";
+    else
+      bout();
+
+    g_locate += 1;
+
+    match(g_nextline, /^[^ \t]*/);
+    eff = substr(g_nextline, RSTART, RLENGTH);
+    sub(/^[^ \t]*[ \t]*$/, "", g_nextline);
+    if (g_nextline != "")
+      bout();
+
+    if ((mnemonic == "addl") || (mnemonic == "movl"))
+      gen_modrm2(0, eff);
+    else if (mnemonic == "orl")
+      gen_modrm2(1, eff);
+    else if (mnemonic == "andl")
+      gen_modrm2(4, eff);
+    else if (mnemonic == "subl")
+      gen_modrm2(5, eff);
+    else if (mnemonic == "xorl")
+      gen_modrm2(6, eff);
+    else if (mnemonic == "cmpl")
+      gen_modrm2(7, eff);
+    else
+      bout();
+
+    if ((mnemonic == "movl") || (imm < -128) || (127 < imm)) {
+      gen_num32(imm);
+      g_locate += 4;
+    } else if ((-128 <= imm) && (imm <= 127)) {
+      if (imm < 0)
+        imm += 256;
+      g_tmpout[g_tmplines++] = sprintf("%x", imm);
+      g_locate += 1;
+    } else
+      bout();
+  } else if ((g_nextline ~ /^%e[abcd]x[ \t]*,/) || (g_nextline ~ /^%e[bs]p[ \t]*,/)) {
+    # ソース側はレジスタ
+
+    if (mnemonic == "addl") {
+      g_tmpout[g_tmplines++] = "01";
+    } else if (mnemonic == "orl") {
+      g_tmpout[g_tmplines++] = "09";
+    } else if (mnemonic == "andl") {
+      g_tmpout[g_tmplines++] = "21";
+    } else if (mnemonic == "subl") {
+      g_tmpout[g_tmplines++] = "29";
+    } else if (mnemonic == "xorl") {
+      g_tmpout[g_tmplines++] = "31";
+    } else if (mnemonic == "cmpl") {
+      g_tmpout[g_tmplines++] = "39";
+    } else if (mnemonic == "movl") {
+      g_tmpout[g_tmplines++] = "89";
+    } else
+      bout();
+
+    g_locate += 1;
+
+    match(g_nextline, /^%e([abcd]x|[bs]p)/);
+    reg = substr(g_nextline, RSTART, RLENGTH);
+    if (reg == "")
+      bout();
+    sub(/^%e([abcd]x|[bs]p)[ \t]*,[ \t]*/, "", g_nextline);
+    if (g_nextline !~ /^[^ \t]+[ \t]*$/)
+      bout();
+    match(g_nextline, /^[^ \t]+/);
+    eff = substr(g_nextline, RSTART, RLENGTH);
+    if (eff == "")
+      bout();
+
+    if (reg == "%eax")
+      gen_modrm2(0, eff);
+    else if (reg == "%ecx")
+      gen_modrm2(1, eff);
+    else if (reg == "%edx")
+      gen_modrm2(2, eff);
+    else if (reg == "%ebx")
+      gen_modrm2(3, eff);
+    else if (reg == "%esp")
+      gen_modrm2(4, eff);
+    else if (reg == "%ebp")
+      gen_modrm2(5, eff);
+    else
+      bout();
+  } else if (g_nextline ~ /^[^,]*,[ \t]*%e([abcd]x|[bs]p)[ \t]*$/) {
+    # ディスティネーション側がレジスタ
+    if (mnemonic == "addl") {
+      g_tmpout[g_tmplines++] = "03";
+    } else if (mnemonic == "orl") {
+      g_tmpout[g_tmplines++] = "0b";
+    } else if (mnemonic == "andl") {
+      g_tmpout[g_tmplines++] = "23";
+    } else if (mnemonic == "subl") {
+      g_tmpout[g_tmplines++] = "2b";
+    } else if (mnemonic == "xorl") {
+      g_tmpout[g_tmplines++] = "33";
+    } else if (mnemonic == "cmpl") {
+      g_tmpout[g_tmplines++] = "3b";
+    } else if (mnemonic == "movl") {
+      g_tmpout[g_tmplines++] = "8b";
+    } else
+      bout();
+
+    g_locate += 1;
+
+    match(g_nextline, /^[^ \t,]+/);
+    eff = substr(g_nextline, RSTART, RLENGTH);
+    sub(/^[^ \t,]+[ \t]*,[ \t]*/, "", g_nextline);
+    if (g_nextline !~ /^%e([abcd]x|[bs]p)[ \t]*$/)
+      bout();
+    match(g_nextline, /^%e([abcd]x|[bs]p)/);
+    reg = substr(g_nextline, RSTART, RLENGTH);
+
+    if (reg == "%eax")
+      gen_modrm2(0, eff);
+    else if (reg == "%ecx")
+      gen_modrm2(1, eff);
+    else if (reg == "%edx")
+      gen_modrm2(2, eff);
+    else if (reg == "%ebx")
+      gen_modrm2(3, eff);
+    else if (reg == "%esp")
+      gen_modrm2(4, eff);
+    else if (reg == "%ebp")
+      gen_modrm2(5, eff);
+    else
+      bout();
+  } else
+    bout();
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_unary(mnemonic,  eff) {
+  g_tmpout[g_tmplines++] = "f7";
+  g_locate += 1;
+
+  match(g_nextline, /^[^ \t]*/);
+  eff = substr(g_nextline, RSTART, RLENGTH);
+  sub(/^[^ \t]*[ \t]*$/, "", g_nextline);
+  if (g_nextline != "")
+    bout();
+
+  if (mnemonic == "negl")
+    gen_modrm2(3, eff);
+  else if (mnemonic == "notl")
+    gen_modrm2(2, eff);
+  else
+    bout();
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_popl() {
+  if (g_nextline ~ /^%eax[ \t]*$/)
+    g_tmpout[g_tmplines++] = "58";
+  else if (g_nextline ~ /^%ecx[ \t]*$/)
+    g_tmpout[g_tmplines++] = "59";
+  else if (g_nextline ~ /^%edx[ \t]*$/)
+    g_tmpout[g_tmplines++] = "5a";
+  else if (g_nextline ~ /^%ebx[ \t]*$/)
+    g_tmpout[g_tmplines++] = "5b";
+  else if (g_nextline ~ /^%esp[ \t]*$/)
+    g_tmpout[g_tmplines++] = "5c";
+  else if (g_nextline ~ /^%ebp[ \t]*$/)
+    g_tmpout[g_tmplines++] = "5d";
+  else
+    bout();
+
+  g_locate += 1;
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_pushl() {
+  if (g_nextline ~ /^%eax[ \t]*$/)
+    g_tmpout[g_tmplines++] = "50";
+  else if (g_nextline ~ /^%ecx[ \t]*$/)
+    g_tmpout[g_tmplines++] = "51";
+  else if (g_nextline ~ /^%edx[ \t]*$/)
+    g_tmpout[g_tmplines++] = "52";
+  else if (g_nextline ~ /^%ebx[ \t]*$/)
+    g_tmpout[g_tmplines++] = "53";
+  else if (g_nextline ~ /^%esp[ \t]*$/)
+    g_tmpout[g_tmplines++] = "54";
+  else if (g_nextline ~ /^%ebp[ \t]*$/)
+    g_tmpout[g_tmplines++] = "55";
+  else
+    bout();
+
+  g_locate += 1;
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_ret() {
+  if (g_nextline != "")
+    bout();
+  g_tmpout[g_tmplines++] = "c3";
+  g_locate += 1;
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function inst_shift(mnemonic,   eff) {
+  if (g_nextline !~ /^%cl[ \t]*,[ \t]*/)
+    bout();
+  sub(/^%cl[ \t]*,[ \t]*/, "", g_nextline);
+  g_tmpout[g_tmplines++] = "d3";
+  g_locate += 1;
+
+  match(g_nextline, /^[^ \t]*/);
+  eff = substr(g_nextline, RSTART, RLENGTH);
+  sub(/^[^ \t]*[ \t]*$/, "", g_nextline);
+  if (g_nextline != "")
+    bout();
+
+  if (mnemonic == "sarl")
+    gen_modrm2(7, eff);
+  else if (mnemonic == "shll")
+    gen_modrm2(4, eff);
+  else if (mnemonic == "shrl")
+    gen_modrm2(5, eff);
+  else
+    bout();
+
+  g_tmpout[g_tmplines++] = "-";
+}
+
+function gen_modrm2(reg, opr,   mod, r_m, ofs) {
+  if ((opr ~ /^%e[a-d]x$/) || (opr ~ /^%e[bs]p$/)) {
+    mod = 192;  # 11000000
+
+    if (opr == "%eax")
+      r_m = 0;  # 00000000
+    else if (opr == "%ecx")
+      r_m = 1;  # 00000001
+    else if (opr == "%edx")
+      r_m = 2;  # 00000010
+    else if (opr == "%ebx")
+      r_m = 3;  # 00000011
+    else if (opr == "%esp")
+      r_m = 4;  # 00000100
+    else if (opr == "%ebp")
+      r_m = 5;  # 00000101
+    else
+      bout();
+
+    g_tmpout[g_tmplines++] = sprintf("%x", mod + reg * 8 + r_m);
+    g_locate += 1;
+  } else if (opr ~ /^[A-Za-z_][0-9A-Za-z_]*$/) {
+    mod = 0;  # 00000000
+    r_m = 5;  # 00000101
+
+    g_tmpout[g_tmplines++] = sprintf("%x @%s", mod + reg * 8 + r_m, opr);
+    g_locate += 5;
+  } else if (opr ~ /^[+-]?[ \t]*(0|[1-9][0-9]*)[ \t]*\([ \t]*%ebp[ \t]*\)$/) {
+    r_m = 5;  # 00000101
+
+    if (substr(opr, 1, 1) == "-") {
+      sub(/^-[ \t]*/, "", opr);
+      match(opr, /^(0|[1-9][0-9]*)/);
+      ofs = substr(opr, RSTART, RLENGTH);
+      if (ofs == "")
+        bout();
+      ofs += 0;
+      ofs = (-ofs);
+    } else if (substr(opr, 1, 1) ~ /\+?/) {
+      sub(/\+?[ \t]*/, "", opr);
+      match(opr, /^(0|[1-9][0-9]*)/);
+      ofs = substr(opr, RSTART, RLENGTH);
+      if (ofs == "")
+        bout();
+      ofs += 0;
+    } else
+      bout();
+
+    if ((-128 <= ofs) && (ofs <= 127)) {
+      if (ofs < 0)
+        ofs += 256;
+      mod = 64;  # 01000000
+      g_tmpout[g_tmplines++] = sprintf("%x %x", mod + reg * 8 + r_m, ofs);
+      g_locate += 2;
+    } else {
+      mod = 128;  # 10000000
+      g_tmpout[g_tmplines++] = sprintf("%x", mod + reg * 8 + r_m);
+      gen_num32(ofs);
+      g_locate += 5;
+    }
+  } else
+    bout();
+}
+
+function gen_num32(ofs,   s1, s2) {
+  s1 = "00000000" sprintf("%x", ofs);
+
+  s2 = substr(s1, length(s1) - 1);
+
+  s1 = substr(s1, 1, length(s1) - 2);
+  s2 = s2 " " substr(s1, length(s1) - 1);
+  s1 = substr(s1, 1, length(s1) - 2);
+  s2 = s2 " " substr(s1, length(s1) - 1);
+  s1 = substr(s1, 1, length(s1) - 2);
+  s2 = s2 " " substr(s1, length(s1) - 1);
+
+  g_tmpout[g_tmplines++] = s2;
+}
+
+function getnext(  tmp) {
+  do {
+    g_lines++;
+    if ((getline tmp) == 0) {
+      g_nextline = 0;
+      return;
+    }
+    sub(/#.*/, "", tmp);  # 以降の注釈をひっぺがす
+  } while (tmp ~ /^[ \t]*$/);  # 空行は読み飛ばす
+
+  g_nextline = tmp;
+}
+
+function bout(msg) {
+  msg = msg ""
+  if (msg == "")
+    system("echo '" "error in " g_lines "' 1>&2");
+  else
+    system("echo '" msg "' 1>&2");
+
+  exit 1;
+}

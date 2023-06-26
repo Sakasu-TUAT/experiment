@@ -1,0 +1,118 @@
+putchar
+	計算
+	pushl $___sF+88
+	pushl $eax
+	call _fputc
+	addl $8, %esp
+
+getchar
+        pushl $___sF
+        call _fgetc
+        addl $4, %esp
+
+定数・変数
+	movl XXX, %eax
+
+三項演算
+	( 条件式評価 )
+	分岐 --- 条件不成立ならジャンプ to L.xx.0
+	条件成立の式
+	無条件ジャンプ to L.xx.1
+	: L.xx.0
+	条件不成立の式
+	: L.xx.1
+
++
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	addl %ecx, %eax
+
+-
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	subl %ecx, %eax
+
+|
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	orl %ecx, %eax
+
+^
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	xorl %ecx, %eax
+
+*
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	imull %ecx, %eax
+
+/
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	cltd
+	idivl %ecx
+
+%
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	cltd
+	idivl %ecx
+	movl %edx, %eax
+
+<<
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	shll %cl, %eax
+
+>>
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	sarl %cl, %eax
+
+>>>
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	shrl %cl, %eax
+
+&
+	右辺計算
+	pushl %eax
+	左辺計算
+	popl %ecx
+	andl %ecx, %eax
+
+~
+	計算
+	notl %eax
+
+単項 +
+	計算
+	( nop )
+
+単項 -
+	計算
+	negl %eax
+
+funccall
+	call XXX

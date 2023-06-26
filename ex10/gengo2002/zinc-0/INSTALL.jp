@@ -1,0 +1,71 @@
+
+インストール方法に関する簡単なメモ (2000 Aug. 31 KISHIMOTO,Makoto)
+
+
+ChangeLog
+
+2000 Sep.  8, p386 環境での実行について追加
+
+
+1. Makefile 中の $(CC) を ANSI 89 (ISO 標準 C) 互換の適当な cc に設定する。
+
+2. znc の生成するコードを、FreeBSD (386 PC) 用にしたければ
+   Makefile 中の $(CFLAGS) で -DZINC_FreeBSD を有効にする。
+   p386 環境用のコードを生成させたいなら、無効にする。
+
+3. make 一発でビルドできるはず。手元の環境
+
+> uname -m -r -s
+FreeBSD 2.2.8-RELEASE i386
+> gcc -v
+gcc version 2.7.2.1
+
+においてでは
+
+gcc -DZINC_FreeBSD -g -ggdb -W -Wall -pedantic -O3 -c lex.c
+lex.c: In function `lexbang':
+lex.c:187: warning: unused parameter `c'
+lex.c: In function `lexeq':
+lex.c:297: warning: unused parameter `c'
+
+の 2 つの warning が出るが、これらは特に問題ない。
+
+4. path が通っている適当なところ ( /usr/local/bin など ) に znc を置く
+
+5. test/ ディレクトリにある適当なサンプルをコンパイルしてみる。
+
+ex.
+
+# cp znc /usr/local/bin
+# ^D
+> rehash
+> cd test
+> znc < gcd.Zn > gcd.s
+
+(znc は標準入出力を使います )
+
+6. gcd.s を見るとアセンブラソースができているはず。
+
+7.1 FreeBSD 用のコードであれば実行してみることができる。
+   ( このときは "_main" という名前でメインルーチンのエントリが必要 )
+
+ex.
+
+> cc -c gcd.s
+> cc -o gcd gcd.o
+> ./gcd
+7
+>
+
+7.2 または p386 シミュレーション環境で実行するには、別添の znas を使って
+    p386 用の入力ファイルを生成して実行する ( znas は awk スクリプト
+    で、実行には /usr/bin/awk に awk(1) が必要 )
+
+ex.
+
+> znas < gcd.s > gcd.p3
+> p386 gcd.p3
+7
+>
+
+以上

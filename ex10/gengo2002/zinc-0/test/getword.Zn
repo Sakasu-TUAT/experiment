@@ -1,0 +1,80 @@
+proc _main;
+proc test;
+proc inputdec, inputdec0;
+proc printdec, printdec0;
+proc linefeed;
+proc space;
+
+word g_num;
+word g_inputchar;
+
+defproc _main:
+{
+  call test;
+}
+
+defproc test:
+word c;
+{
+  set g_inputchar := getchar;
+  while (g_inputchar != -1)
+    {
+      call inputdec;
+      call printdec;
+      call linefeed;
+      while ((g_inputchar != -1) & ((g_inputchar < 48) | (57 < g_inputchar)))
+        {
+          set g_inputchar := getchar;
+        }
+    }
+}
+
+defproc inputdec:
+{
+  set g_num := 0;
+  call inputdec0;
+}
+
+defproc inputdec0:
+{
+  if ((48 <= g_inputchar) & (g_inputchar <= 57))
+    {
+      set g_num := (g_num * 10) + (g_inputchar - 48);
+      set g_inputchar := getchar;
+      call inputdec0;
+    }
+}
+
+defproc printdec:
+word d;
+{
+  if (g_num < 0)
+    {
+      set g_num := -g_num;
+      putchar 45;  // '-'
+    }
+  call printdec0;
+}
+
+defproc printdec0:
+word d;
+{
+  set d := g_num;
+  if (d > 9)
+    {
+      set g_num := d / 10;
+      set d := d % 10;
+      call printdec;
+    }
+  putchar d + 48;  // 48 == '0'
+}
+
+defproc linefeed:
+{
+  putchar 10;  // '\n'
+}
+
+defproc space:
+{
+  putchar 32;  // ' '
+}

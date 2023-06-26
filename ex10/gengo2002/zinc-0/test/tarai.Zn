@@ -1,0 +1,46 @@
+proc _main, tarai;
+
+word x, y, z, r;
+
+defproc _main:
+{
+  set x := 12;
+  set y := 6;
+  set z := 0;
+
+  call tarai;
+}
+
+defproc tarai:
+word x0, x1;
+word y0, y1;
+word z0, z1;
+{
+  if (x > y) {
+    set x0 := x;
+    set y0 := y;
+    set z0 := z;
+
+    set x := x0 - 1;
+    call tarai;
+    set x1 := r;
+
+    set x := y0 - 1;
+    set y := z0;
+    set z := x0;
+    call tarai;
+    set y1 := r;
+
+    set x := z0 - 1;
+    set y := x0;
+    set z := y0;
+    call tarai;
+
+    set x := x1;
+    set y := y1;
+    set z := r;
+    call tarai;
+    set y := r;
+  }
+  set r := y;
+}

@@ -1,0 +1,14 @@
+proc _main;
+
+defproc _main:
+word i;
+{
+  set i := 0;
+  while (i <= 9)
+    {
+      putchar 48 + i;
+      putchar 32;
+      set i := i + 1;
+    }
+  putchar 10;
+}

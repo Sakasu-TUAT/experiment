@@ -1,0 +1,280 @@
+- 00 x ADD reg8,reg8/mem
+* 01 x ADDL reg32,reg32/mem
+- 02 x ADD reg8/mem,reg8
+* 03 x ADDL reg32/mem,reg32
+- 04 2 ADD imm8,%AL
+- 05 5 ADDL imm32,%EAX
+- 06 1 PUSH %ES
+- 07 1 POP %ES
+
+- 08 x OR reg8,reg8/mem
+* 09 x ORL reg32,reg32/mem
+- 0a x OR reg8/mem,reg8
+* 0b x ORL reg32/mem,reg32
+- 0c 2 OR imm8,%AL
+- 0d 5 ORL imm32,%EAX
+- 0e 1 PUSH %CS
+- 0f x ESC
+
+- 10 x ADC reg8,reg8/mem
+- 11 x ADCL reg32,reg32/mem
+- 12 x ADC reg8/mem,reg8
+- 13 x ADCL reg32/mem,reg32
+- 14 2 ADC imm8,%AL
+- 15 5 ADCL imm32,%EAX
+- 16 1 PUSH %SS
+- 17 1 POP %SS
+
+- 18 x SBB reg8,reg8/mem
+- 19 x SBBL reg32,reg32/mem
+- 1a x SBB reg8/mem,reg8
+- 1b x SBBL reg32/mem,reg32
+- 1c 2 SBB imm8,%AL
+- 1d 5 SBBL imm32,%EAX
+- 1e 1 PUSH %DS
+- 1f 1 POP %DS
+
+- 20 x AND reg8,reg8/mem
+* 21 x ANDL reg32,reg32/mem
+- 22 x AND reg8/mem,reg8
+* 23 x ANDL reg32/mem,reg32
+- 24 2 AND imm8,%AL
+- 25 5 ANDL imm32,%EAX
+- 26 1 ES:
+- 27 1 DAA
+
+- 28 x SUB reg8,reg8/mem
+* 29 x SUBL reg32,reg32/mem
+- 2a x SUB reg8/mem,reg8
+* 2b x SUBL reg32/mem,reg32
+- 2c 2 SUB imm8,%AL
+- 2d 5 SUBL imm32,%EAX
+- 2e 1 CS:
+- 2f 1 DAS
+
+- 30 x XOR reg8,reg8/mem
+* 31 x XORL reg32,reg32/mem
+- 32 x XOR reg8/mem,reg8
+* 33 x XORL reg32/mem,reg32
+- 34 2 XOR imm8,%AL
+- 35 5 XORL imm32,%EAX
+- 36 1 SS:
+- 37 1 AAA
+
+- 38 x CMP reg8,reg8/mem
+* 39 x CMPL reg32,reg32/mem
+- 3a x CMP reg8/mem,reg8
+* 3b x CMPL reg32/mem,reg32
+- 3c 2 CMP imm8,%AL
+- 3d 5 CMPL imm32,%EAX
+- 3e 1 DS:
+- 3f 1 AAS
+
+- 40 1 INCL %EAX
+- 41 1 INCL %ECX
+- 42 1 INCL %EDX
+- 43 1 INCL %EBX
+- 44 1 INCL %ESP
+- 45 1 INCL %EBP
+- 46 1 INCL %ESI
+- 47 1 INCL %EDI
+
+- 48 1 DECL %EAX
+- 49 1 DECL %ECX
+- 4a 1 DECL %EDX
+- 4b 1 DECL %EBX
+- 4c 1 DECL %ESP
+- 4d 1 DECL %EBP
+- 4e 1 DECL %ESI
+- 4f 1 DECL %EDI
+
+* 50 1 PUSHL %EAX
+* 51 1 PUSHL %ECX
+* 52 1 PUSHL %EDX
+* 53 1 PUSHL %EBX
+* 54 1 PUSHL %ESP
+* 55 1 PUSHL %EBP
+- 56 1 PUSHL %ESI
+- 57 1 PUSHL %EDI
+
+* 58 1 POPL %EAX
+* 59 1 POPL %ECX
+* 5a 1 POPL %EDX
+* 5b 1 POPL %EBX
+* 5c 1 POPL %ESP
+* 5d 1 POPL %EBP
+- 5e 1 POPL %ESI
+- 5f 1 POPL %EDI
+
+- 60 1 PUSHA
+- 61 1 POPA
+- 62 x BOUND mem,reg ?
+- 63 x ARPL reg,mem/reg ?
+- 64 1 FS:
+- 65 1 GS:
+- 66 1 Operand Size Prefix
+- 67 1 Address Size Prefix
+
+- 68 2 PUSH imm32
+- 69 x IMULL imm32,reg32/mem,reg32
+- 6a 2 PUSH imm8(符号拡張)
+- 6b x IMULL imm8,reg32/mem,reg32(符号拡張)
+- 6c 1 INS %DX
+- 6d 1 INS %EDX
+- 6e 1 OUTS %DX
+- 6f 1 OUTS %EDX
+
+- 70 2 JO disp8
+- 71 2 JNO disp8
+- 72 2 JB/JNAE disp8
+- 73 2 JNB/JAE disp8
+* 74 2 JE/JZ disp8
+* 75 2 JNE/JNZ disp8
+- 76 2 JBE/JNA disp8
+- 77 2 JNBE/JA disp8
+
+- 78 2 JS disp8
+- 79 2 JNS disp8
+- 7a 2 JP/JPE disp8
+- 7b 2 JNP/JPO disp8
+* 7c 2 JL/JNGE disp8
+* 7d 2 JNL/JGE disp8
+* 7e 2 JLE/JNG disp8
+* 7f 2 JNLE/JG disp8
+
+- 80 x (ADD/OR/ADC/SBB/AND/SUB/XOR/CMP) imm8,reg8/mem
+* 81 x (ADDL/ORL/ADCL/SBBL/ANDL/SUBL/XORL/CMPL) imm32,reg32/mem
+- 82
+* 83 x (ADDL/ORL/ADCL/SBBL/ANDL/SUBL/XORL/CMPL) imm8,reg32/mem(符号拡張)
+- 84 x TEST reg8,reg8/mem
+- 85 x TESTL reg32,reg32/mem
+- 86 x XCHG reg8,reg8/mem
+- 87 x XCHGL reg32,reg32/mem
+
+- 88 x MOV reg8,reg8/mem
+* 89 x MOVL reg32,reg32/mem
+- 8a x MOV reg8/mem,reg8
+* 8b x MOVL reg32/mem,reg32
+- 8c 2 MOV sreg,reg
+- 8d x LEAL mem,reg32
+- 8e 2 MOV reg,sreg
+- 8f x POPL reg32/mem
+
+- 90 1 XCHGL %EAX,%EAX (NOP)
+- 91 1 XCHGL %ECX,%EAX
+- 92 1 XCHGL %EDX,%EAX
+- 93 1 XCHGL %EBX,%EAX
+- 94 1 XCHGL %ESP,%EAX
+- 95 1 XCHGL %EBP,%EAX
+- 96 1 XCHGL %ESI,%EAX
+- 97 1 XCHGL %EDI,%EAX
+
+- 98 1 CBW
+* 99 1 CLTD
+- 9a 7 CALLF addr
+- 9b 1 WAIT
+- 9c 1 PUSHF
+- 9d 1 POPF
+- 9e 1 SAHF
+- 9f 1 LAHF
+
+- a0 5 MOV [offset],%AL
+- a1 5 MOVL [offset],%EAX
+- a2 5 MOV %AL,[offset]
+- a3 5 MOVL %EAX,[offset]
+- a4 1 MOVSB
+- a5 1 MOVSD
+- a6 1 CMPSB
+- a7 1 CMPSD
+
+- a8 2 TEST imm8,%AL
+- a9 5 TESTL imm32,%EAX
+- aa 1 STOSB
+- ab 1 STOSD
+- ac 1 LODSB
+- ad 1 LODSD
+- ae 1 SCASB
+- af 1 SCASD
+
+- b0 2 MOV imm8,%AL
+- b1 2 MOV imm8,%CL
+- b2 2 MOV imm8,%DL
+- b3 2 MOV imm8,%BL
+- b4 2 MOV imm8,%AH
+- b5 2 MOV imm8,%CH
+- b6 2 MOV imm8,%DH
+- b7 2 MOV imm8,%BH
+
+- b8 5 MOVL imm32,%EAX
+- b9 5 MOVL imm32,%ECX
+- ba 5 MOVL imm32,%EDX
+- bb 5 MOVL imm32,%EBX
+- bc 5 MOVL imm32,%ESP
+- bd 5 MOVL imm32,%EBP
+- be 5 MOVL imm32,%ESI
+- bf 5 MOVL imm32,%EDI
+
+- c0 2 Shift imm8,reg8
+- c1 2 ShiftL imm8,reg32
+- c2 3 RET imm16
+* c3 1 RET
+- c4 x LESL mem,reg32
+- c5 x LDSL mem,reg32
+- c6 x MOV imm8,reg8/mem
+* c7 x MOVL imm32,reg32/mem
+
+- c8 4 ENTER imm8,imm16
+* c9 1 LEAVE
+- ca 3 RETF imm16
+- cb 1 RETF
+* cc 1 INT3
+* cd 2 INT imm8
+- ce 1 INTO
+- cf 1 IRET
+
+- d0 1 Shift $1,reg8/mem
+- d1 1 ShiftL $1,reg32/mem
+- d2 1 Shift %CL,reg8/mem
+* d3 1 ShiftL %CL,reg32/mem
+- d4 1 AAM
+- d5 1 AAD
+- d6
+- d7 1 XLAT
+
+- d8〜df x F*
+
+- e0 2 LOOPNE disp8
+- e1 2 LOOPE disp8
+- e2 2 LOOP disp8
+- e3 2 JCXZ disp8
+- e4 2 IN imm8,%AL
+- e5 2 INL imm8,%EAX
+- e6 2 OUT %AL,imm8
+- e7 2 OUTL %EAX,imm8
+
+* e8 5 CALL addr
+* e9 5 JMP addr
+- ea 7 JMPF addr
+- eb 2 JMPN disp8
+- ec 1 IN %DX,AL
+- ed 1 INL %DX,%EAX
+- ee 1 OUT %AL,%DX
+- ef 1 OUTL %EAX,%DX
+
+- f0 1 LOCK prefix
+- f1
+- f2 1 REPNE prefix
+- f3 1 REP(E) prefix
+* f4 1 HLT
+- f5 1 CMC
+- f6 x Unary reg8/mem | TEST imm8,reg8/mem
+* f7 x UnaryL reg32/mem | TEST imm32,reg8/mem
+
+- f8 1 CLC
+- f9 1 STC
+- fa 1 CLI
+- fb 1 STI
+- fc 1 CLD
+- fd 1 STD
+- fe x (INC/DEC) reg8/mem
+- ff x (INCL/DECL) reg32/mem | PUSHL reg32/mem | Indirection

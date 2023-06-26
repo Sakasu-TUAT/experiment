@@ -1,0 +1,100 @@
+0.
+なし
+
+1.
+reg,reg
+reg,mem
+mem,reg
+imm32,reg/mem
+
+2.
+reg/mem
+
+3.
+%cl,reg/mem (*)
+
+4.
+reg/mem,%eax
+
+5.
+reg
+
+6.
+label
+
+7.
+imm8
+ - - - - - - - - - - - - - - - -
+reg
+  %eax
+  %ebx
+  %ecx
+  %edx
+  %ebp
+  %esp
+
+immX
+  $0
+  $[1-9][0-9]*
+
+label
+  [a-z_][a-z0-9_.]*
+
+mem
+  <label>
+  [+|-][1-9][0-9]*(%ebp)
+================================
+code addr ZSO
+
+movl 1 ---
+
+addl 1 xxx
+subl 1 xxx
+
+andl 1 xx0
+orl 1 xx0
+xorl 1 xx0
+
+cmpl 1 xxx
+
+negl 2 xxx
+notl 2 ---
+
+sarl 3 xxx (*1)
+shll 3 xxx (*1)
+shrl 3 xxx (*1)
+
+idivl 4 ???
+imull 4 ??x (*2)
+
+cltd 0 ---
+
+pushl 5 ---
+popl 5 ---
+
+jcc 6 ---
+jmp 6 ---
+call 6 ---
+leave 0 ---
+ret 0 ---
+
+int 7 ---
+hlt 0 ---
+================================
+(*)
+%cl とは %ecx の下位 8 bit を指す。実際にはマスクされて
+5 bit のみ使用される。(11111(2) == 31)
+
+(*1)
+シフト命令のフラグ変化について。
+Z と S は通常と同じ。O は、sarl ではシフト幅が 1 の時リセット。
+shll と shrl ではシフト幅が 1 以外の時は不定で、シフト幅が 1 の時は、
+shrl では、1...(2) → 01...(2) というシフトの場合にセット、
+さもなくばリセットで、shll の場合 01...(2) → 1...(2) という
+シフトの場合にセット、さもなくばリセット、となる。
+
+(*2)
+imul 命令のフラグ変化について。
+Z と S は不定。O は、EDX が 0x00000000 かつ EAX の MSB が 0 であるか、
+または EDX が 0xffffffff かつ EAX の MSB が 1 であるか、のどちらかで
+あればリセット、さもなくばセット、となる。

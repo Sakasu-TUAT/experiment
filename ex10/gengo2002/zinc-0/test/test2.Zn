@@ -1,0 +1,9 @@
+proc uke;
+
+defproc uke:
+word oyo;
+{
+  set oyo := 1 << 3;
+  set oyo := 5 >> 3;
+  set oyo := 5 >>> 3;
+}

@@ -1,0 +1,82 @@
+addl     reg32,reg32/mem    [01][mod reg R/M]{disp}
+         reg32/mem,reg32    [03][mod reg R/M]{disp}
+         imm32,reg32/mem    [81][mod 000 R/M]{disp}[imm32]
+         imm8,reg32/mem     [83][mod 000 R/M]{disp}[imm8]
+
+andl     reg32,reg32/mem    [21][mod reg R/M]{disp}
+         reg32/mem,reg32    [23][mod reg R/M]{disp}
+         imm32,reg32/mem    [81][mod 100 R/M]{disp}[imm32]
+         imm8,reg32/mem     [83][mod 100 R/M]{disp}[imm8]
+
+call     disp32             [e8][disp32]
+
+cmpl     reg32,reg32/mem    [39][mod reg R/M]{disp}
+         reg32/mem,reg32    [3b][mod reg R/M]{disp}
+         imm32,reg32/mem    [81][mod 111 R/M]{disp}[imm32]
+         imm8,reg32/mem     [83][mod 111 R/M]{disp}[imm8]
+
+cltd                        [99]
+
+hlt                         [f4]
+
+idivl    reg32/mem,%eax     [f7][mod 111 R/M]{disp}
+
+imull    reg32/mem,%eax     [f7][mod 101 R/M]{disp}
+
+int      imm8               [cd][imm8]
+
+int3                        [cc]
+
+jmp      disp32             [e9][disp32]
+
+je/jz    disp8              [74][disp8]
+jne/jnz  disp8              [75][disp8]
+jl/jnge  disp8              [7c][disp8]
+jnl/jge  disp8              [7d][disp8]
+jle/jng  disp8              [7e][disp8]
+jnle/jg  disp8              [7f][disp8]
+
+leave                       [c9]
+
+movl     reg32,reg32/mem    [89][mod reg R/M]{disp}
+         reg32/mem,reg32    [8b][mod reg R/M]{disp}
+         imm32,reg32/mem    [c7][mod 000 R/M]{disp}[imm32]
+
+negl     reg32/mem          [f7][mod 011 R/M]{disp}
+
+notl     reg32/mem          [f7][mod 010 R/M]{disp}
+
+orl      reg32,reg32/mem    [09][mod reg R/M]{disp}
+         reg32/mem,reg32    [0b][mod reg R/M]{disp}
+         imm32,reg32/mem    [81][mod 001 R/M]{disp}[imm32]
+         imm8,reg32/mem     [83][mod 001 R/M]{disp}[imm8]
+
+popl     %eax               [58]
+         %ebx               [5b]
+         %ecx               [59]
+         %edx               [5a]
+         %ebp               [5d]
+         %esp               [5c]
+
+pushl    %eax               [50]
+         %ebx               [53]
+         %ecx               [51]
+         %edx               [52]
+         %ebp               [55]
+         %esp               [54]
+
+ret                         [c3]
+
+sarl     %cl,reg32/mem      [d3][mod 111 R/M]{disp}
+shll     %cl,reg32/mem      [d3][mod 100 R/M]{disp}
+shrl     %cl,reg32/mem      [d3][mod 101 R/M]{disp}
+
+subl     reg32,reg32/mem    [29][mod reg R/M]{disp}
+         reg32/mem,reg32    [2b][mod reg R/M]{disp}
+         imm32,reg32/mem    [81][mod 101 R/M]{disp}[imm32]
+         imm8,reg32/mem     [83][mod 101 R/M]{disp}[imm8]
+
+xorl     reg32,reg32/mem    [31][mod reg R/M]{disp}
+         reg32/mem,reg32    [33][mod reg R/M]{disp}
+         imm32,reg32/mem    [81][mod 110 R/M]{disp}[imm32]
+         imm8,reg32/mem     [83][mod 110 R/M]{disp}[imm8]

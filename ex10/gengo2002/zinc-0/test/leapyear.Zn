@@ -1,0 +1,85 @@
+proc _main;
+proc test;
+proc leapyear;
+proc printdec;
+proc linefeed;
+proc space;
+
+word g_num;
+word g_year;
+word g_isleap;
+
+defproc _main:
+{
+  call test;
+}
+
+defproc test:
+word y;
+{
+  set y := 0;
+  while (y <= 2000)
+    {
+      set g_year := y;
+      call leapyear;
+      if (g_isleap)
+        {
+          set g_num := y;
+          call printdec;
+          if (((y + 4) % 40) != 0)
+            {
+              call space;
+            }
+        }
+      if (((y + 4) % 40) == 0)
+        {
+          call linefeed;
+        }
+      set y := y + 1;
+    }
+  call linefeed;
+}
+
+defproc leapyear:
+{
+  set g_isleap := 0;  // 平年はうるう年ではない
+  if ((g_year % 4) == 0)
+    {
+      set g_isleap := -1;
+    }
+  if ((g_year % 100) == 0)
+    {
+      set g_isleap := 0;
+    }
+  if ((g_year % 400) == 0)
+    {
+      set g_isleap := -1;
+    }
+}
+
+defproc printdec:
+word d;
+{
+  if (g_num < 0)
+    {
+      set g_num := -g_num;
+      putchar 45;  // '-'
+    }
+  set d := g_num % 10;
+  if (g_num > 9)
+    {
+      set g_num := g_num / 10;
+      call printdec;
+    }
+  putchar d + 48;  // 48 == '0'
+}
+
+defproc linefeed:
+{
+  putchar 10;  // '\n'
+}
+
+defproc space:
+{
+  putchar 32;  // ' '
+}

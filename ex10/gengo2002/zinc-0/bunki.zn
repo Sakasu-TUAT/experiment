@@ -1,0 +1,39 @@
+proc _main;
+proc putword, putword0;
+word x, z;
+
+defproc _main :
+{
+    set x := 96;
+    set z := x;
+    if (x%2==0){
+        if(x%3==0){
+            set z :=x/6;
+        } 
+    }
+    call putword;
+    putchar 10;
+}
+
+defproc putword :
+    word n;
+{
+    set n := z;
+    if (z < 0) {
+        putchar 45;
+        set z := -z;
+    }
+    call putword0;
+    set z := n;
+}
+
+defproc putword0 :
+    word d;
+{
+    set d := z % 10;
+    if (10 <= z) {
+        set z := z / 10;
+        call putword0;
+    }
+    putchar 48 + d;
+}

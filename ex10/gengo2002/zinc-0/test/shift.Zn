@@ -1,0 +1,58 @@
+proc _main, gcd;
+proc putword, putword0;
+word x, y, z;
+
+defproc _main :
+{
+  set z := 16;
+  call putword;
+  putchar 10;
+  set z := 16 >> 1;
+  call putword;
+  putchar 10;
+  set z := 16 >> 2;
+  call putword;
+  putchar 10;
+}
+
+defproc gcd :
+  word a, b, tmp;
+{
+  if (x > y) {
+    set a := x;
+    set b := y;
+  }
+  if (x <= y) {
+    set a := y;
+    set b := x;
+  }
+  while (a % b != 0) {
+    set tmp := b;
+    set b := a % b;
+    set a := tmp;
+  }
+  set z := b;
+}
+
+defproc putword :
+  word n;
+{
+  set n := z;
+  if (z < 0) {
+    putchar 45;
+    set z := - z;
+  }
+  call putword0;
+  set z := n;
+}
+
+defproc putword0 :
+  word d;
+{
+  set d := z % 10;
+  if (10 <= z) {
+    set z := (z - d) / 10;
+    call putword0;  // ←この再帰呼び出しの間に
+  }                 // グローバル変数である z は破壊される (... かもしれない )
+  putchar 48 + d;   // ということに注意
+}
