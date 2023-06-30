@@ -1,0 +1,9 @@
+total 44
+drwxr-xr-x  2 sakasu sakasu  4096 Jun 30 21:57 .
+drwxr-xr-x 11 sakasu sakasu  4096 Jun 30 21:44 ..
+-rwxr-xr-x  1 sakasu sakasu 16744 Jun 30 21:57 a.out
+-rw-r--r--  1 sakasu sakasu   452 Jun 30 21:45 output.txt
+-rw-r--r--  1 sakasu sakasu  2373 Jun 30 21:57 redirect.c
+-rw-r--r--  1 sakasu sakasu  3382 Jun 30 20:27 sample1.c
+-rw-r--r--  1 sakasu sakasu  1112 Jun 30 21:44 simple_shell.c
+-rw-r--r--  1 sakasu sakasu     0 Jun 30 21:42 test.txt
